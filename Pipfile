@@ -7,6 +7,9 @@ name = "pypi"
 aiohttp = "*"
 win10toast = "*"
 python-dotenv = "*"
+requests = "*"
+sqlalchemy = "*"
+ttkthemes = "*"
 
 [dev-packages]
 
