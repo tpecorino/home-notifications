@@ -1,9 +1,9 @@
+import json
+import os
 from win10toast import ToastNotifier
 import aiohttp as aiohttp
 from aiohttp import web
 from dotenv import load_dotenv
-import json
-import os
 
 load_dotenv('./.env')
 
@@ -83,12 +83,13 @@ async def websocket(session):
                 break
 
 
-async def init(app):
+async def start(app):
     print('init')
     session = aiohttp.ClientSession()
     await websocket(session)
 
 
-app = web.Application()
-app.on_startup.append(init)
-aiohttp.web.run_app(app)
+def init():
+    app = web.Application()
+    app.on_startup.append(start)
+    aiohttp.web.run_app(app)

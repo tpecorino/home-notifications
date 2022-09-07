@@ -71,7 +71,10 @@ listbox_unsubscribed_entities.config(yscrollcommand=scrollbar.set)
 scrollbar.config(command=listbox_unsubscribed_entities.yview)
 
 
-def init(home_entities):
+def init():
+    print("GUI Init")
+    home_entities = db.fetch_entities()
+
     for entity in home_entities:
         if entity.is_subscribed:
             listbox_subscribed_entities.insert(tk.END, entity.name)
