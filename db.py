@@ -1,7 +1,7 @@
+import os
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, inspect
 from sqlalchemy.orm import Session
 from models.Entity import Entity
-
 from pathlib import Path
 
 db_path = "{}\sqlite\home_automation.db".format(str(Path.home()))
@@ -13,8 +13,18 @@ db_path = "{}\sqlite\home_automation.db".format(str(Path.home()))
 
 
 class DBConnection:
+    db_dir = "{}\sqlite".format(str(Path.home()))
     db_path = "{}\sqlite\home_automation.db".format(str(Path.home()))
-    engine = create_engine("sqlite:///{}".format(db_path), echo=True, future=True)
+
+    if not os.path.exists(db_dir):
+        os.makedirs(db_dir)
+
+    if not os.path.exists(db_path):
+        f = open(db_path, 'w+')
+        f.close()
+
+    engine = create_engine("sqlite:///{}".format(db_path),
+                           echo=True, future=True, connect_args={'check_same_thread': False})
     session = None
 
     if session is None:
