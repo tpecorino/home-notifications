@@ -7,7 +7,7 @@ def map_entities(state):
 
 def fetch_entities(url, access_token):
     headers = {"Content-Type": "application/json", "Authorization": "Bearer {}".format(access_token)}
-    r = requests.get(url, headers=headers)
+    r = requests.get("{}/states".format(url), headers=headers)
     states = r.json()
     entities = map(map_entities, states)
     return list(entities)
