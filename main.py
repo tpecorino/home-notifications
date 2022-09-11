@@ -3,7 +3,7 @@ import gui
 import os
 from dotenv import load_dotenv
 from db import DBConnection
-from fetch_entities import fetch_entities
+from get_home_entities import fetch_entities
 from multiprocessing import Process
 
 load_dotenv('./.env')
@@ -21,12 +21,10 @@ if not home_entities:
     db.setup(ha_entities)
 
 if __name__ == '__main__':
-    two = Process(target=subscriber.init, daemon=True)
-
     ui = gui.init
-    one = Process(target=ui, daemon=True)
-    two.start()
-    one.start()
-    two.join()
-    one.join()
-
+    gui_process = Process(target=ui, daemon=True)
+    subscriber_process = Process(target=subscriber.init, daemon=True)
+    subscriber_process.start()
+    gui_process.start()
+    subscriber_process.join()
+    gui_process.join()

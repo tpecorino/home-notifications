@@ -1,27 +1,11 @@
-import os
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, inspect
 from sqlalchemy.orm import Session
 from models.Entity import Entity
 from pathlib import Path
 
-db_path = "{}\sqlite\home_automation.db".format(str(Path.home()))
-
-
-# engine = create_engine("sqlite:///{}".format(db_path), echo=True, future=True)
-
-# table_name = "entities"
-
 
 class DBConnection:
-    db_dir = "{}\sqlite".format(str(Path.home()))
-    db_path = "{}\sqlite\home_automation.db".format(str(Path.home()))
-
-    if not os.path.exists(db_dir):
-        os.makedirs(db_dir)
-
-    if not os.path.exists(db_path):
-        f = open(db_path, 'w+')
-        f.close()
+    db_path = Path("{}\sqlite\home_automation.db".format(str(Path.home())))
 
     engine = create_engine("sqlite:///{}".format(db_path),
                            echo=True, future=True, connect_args={'check_same_thread': False})
@@ -35,6 +19,10 @@ class DBConnection:
 
     def __init__(self):
         table_exists = inspect(self.engine).has_table(self.table_name)
+
+        if not self.db_path.is_file():
+            print("Database not found. Creating one.")
+            self.db_path.parent.mkdir(exist_ok=True, parents=True)
 
         if not table_exists:
             self.create_table()
@@ -53,6 +41,9 @@ class DBConnection:
     def fetch_entity_by_name(self, name):
         return self.session.query(Entity).filter(Entity.name == name).first()
 
+    def fetch_entity_by_is_subscribed(self):
+        return self.session.query(Entity.name).filter(Entity.is_subscribed == 1).all()
+
     def update_entity(self, entity_id, is_subscribed):
         self.session.query(Entity).filter(Entity.name == entity_id).update({'is_subscribed': is_subscribed})
         self.session.commit()
@@ -62,18 +53,16 @@ class DBConnection:
 
     def setup(self, items):
         entities_list = []
-        entities_count = self.count()
 
-        if not entities_count:
-            print("Inserting data.")
-            for entity in items:
-                new_entity = Entity(
-                    name=entity,
-                    is_subscribed=0
-                )
+        print("Inserting data.")
+        for entity in items:
+            new_entity = Entity(
+                name=entity,
+                is_subscribed=0
+            )
 
-                entities_list.append(new_entity)
+            entities_list.append(new_entity)
 
-                print("Adding items to database.")
-                self.session.add_all(entities_list)
-                self.session.commit()
+            print("Adding items to database.")
+            self.session.add_all(entities_list)
+            self.session.commit()
