@@ -44,6 +44,8 @@ frame_entities_container.pack(fill=tk.BOTH, side=tk.TOP)
 
 frame_unsubscribed = tk.Frame(frame_entities_container)
 frame_unsubscribed.grid(row=0, column=0, sticky="nsew")
+unsubscribed_label = tk.Label(frame_unsubscribed, text="Unsubscribed")
+unsubscribed_label.pack()
 listbox_unsubscribed_entities = tk.Listbox(frame_unsubscribed, width=50, height=50)
 listbox_unsubscribed_entities.pack(side=tk.LEFT, fill=tk.BOTH)
 
@@ -61,6 +63,8 @@ btn_unsubscribe.bind("<Button-1>", unsubscribe)
 
 frame_subscribed = tk.Frame(frame_entities_container)
 frame_subscribed.grid(row=0, column=2, sticky="nsew")
+subscribed_label = tk.Label(frame_subscribed, text="Subscribed")
+subscribed_label.pack()
 listbox_subscribed_entities = tk.Listbox(frame_subscribed, width=50)
 listbox_subscribed_entities.pack(side=tk.RIGHT, fill=tk.BOTH)
 
