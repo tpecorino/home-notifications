@@ -5,27 +5,16 @@ import aiohttp as aiohttp
 from aiohttp import web
 from dotenv import load_dotenv
 
+import db
+
 load_dotenv('./.env')
 
 access_token = os.environ["ACCESS_TOKEN"]
 url = os.environ["WEB_SOCKET_URL"]
 
-entities = [
-    'light.entry_lamp',
-    'light.floor_lamp',
-]
+db = db.DBConnection()
 
 n = ToastNotifier()
-
-
-async def handle_event(data):
-    event_type = data["event"]["event_type"]
-    new_state = data["event"]["data"]["new_state"]
-    entity_id = new_state["entity_id"]
-    state = new_state["state"]
-    entity_label = new_state["attributes"]["friendly_name"]
-    if event_type == "state_changed" and entity_id in entities:
-        await state_change_notification(entity_label, state)
 
 
 async def state_change_notification(entity_label, state):
@@ -39,7 +28,6 @@ async def subscribe_event(msg, ws):
 
 
 async def subscribe_trigger(msg, ws):
-    print(msg)
     subscription_payload = {
         "id": 2,
         "type": "subscribe_trigger",
@@ -52,12 +40,23 @@ async def subscribe_trigger(msg, ws):
 
 
 async def send_auth(msg, ws):
-    print(msg)
     payload = {
         "type": "auth",
         "access_token": access_token
     }
     await ws.send_str(json.dumps(payload))
+
+
+async def handle_event(data):
+    entities = [i[0] for i in db.fetch_entity_by_is_subscribed()]
+    
+    event_type = data["event"]["event_type"]
+    new_state = data["event"]["data"]["new_state"]
+    entity_id = new_state["entity_id"]
+    state = new_state["state"]
+    entity_label = new_state["attributes"]["friendly_name"]
+    if event_type == "state_changed" and entity_id in entities:
+        await state_change_notification(entity_label, state)
 
 
 async def websocket(session):
