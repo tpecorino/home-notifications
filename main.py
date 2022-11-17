@@ -8,23 +8,37 @@ from multiprocessing import Process
 
 load_dotenv('./.env')
 
-access_token = os.environ["ACCESS_TOKEN"]
-url = os.environ["REST_URL"]
 
-db = DBConnection()
+class HomeEventNotifier:
+    def __init__(self):
+        self.gui = gui.init
+        self.db = DBConnection()
+        self.home_entities = None
+        self.access_token = os.environ["ACCESS_TOKEN"]
+        self.rest_url = os.environ["REST_URL"]
 
-home_entities = db.fetch_entities()
+    def start_processes(self):
+        gui_process = Process(target=self.gui, daemon=True)
+        subscriber_process = Process(target=subscriber.init, daemon=True)
+        subscriber_process.start()
+        gui_process.start()
+        subscriber_process.join()
+        gui_process.join()
 
-if not home_entities:
-    ha_entities = fetch_entities(url, access_token)
-    print(ha_entities)
-    db.setup(ha_entities)
+    def fetch_entities(self):
+        return self.db.fetch_entities()
+
+    def run(self):
+        home_entities = self.fetch_entities()
+
+        if not home_entities:
+            ha_entities = fetch_entities(self.rest_url, self.access_token)
+            print(ha_entities)
+            self.db.setup(ha_entities)
+
+        self.start_processes()
+
 
 if __name__ == '__main__':
-    ui = gui.init
-    gui_process = Process(target=ui, daemon=True)
-    subscriber_process = Process(target=subscriber.init, daemon=True)
-    subscriber_process.start()
-    gui_process.start()
-    subscriber_process.join()
-    gui_process.join()
+    home_notification = HomeEventNotifier()
+    home_notification.run()
