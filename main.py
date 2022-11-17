@@ -1,8 +1,8 @@
 import subscriber
-import gui
 import os
 from dotenv import load_dotenv
 from db import DBConnection
+from gui import GUI
 from get_home_entities import fetch_entities
 from multiprocessing import Process
 
@@ -11,14 +11,15 @@ load_dotenv('./.env')
 
 class HomeEventNotifier:
     def __init__(self):
-        self.gui = gui.init
         self.db = DBConnection()
+        self.gui = GUI(self.db)
         self.home_entities = None
         self.access_token = os.environ["ACCESS_TOKEN"]
         self.rest_url = os.environ["REST_URL"]
 
     def start_processes(self):
-        gui_process = Process(target=self.gui, daemon=True)
+        ui = self.gui.init()
+        gui_process = Process(target=ui, daemon=True)
         subscriber_process = Process(target=subscriber.init, daemon=True)
         subscriber_process.start()
         gui_process.start()
