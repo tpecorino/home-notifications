@@ -1,88 +1,89 @@
 import tkinter as tk
-from db import DBConnection
-
-db = DBConnection()
 
 
-def subscribe(event):
-    entity_id = listbox_unsubscribed_entities.get(tk.ANCHOR)
+class GUI:
+    def __init__(self, db):
+        self.db = db
+        self.window = tk.Tk()
+        self.frame_entities_container = tk.Frame(self.window)
+        self.frame_subscribed = tk.Frame(self.frame_entities_container)
+        self.frame_unsubscribed = tk.Frame(self.frame_entities_container)
+        self.frame_btn_group = tk.Frame(self.frame_entities_container)
+        self.btn_subscribe = tk.Button(self.frame_btn_group, text=">")
+        self.btn_unsubscribe = tk.Button(self.frame_btn_group, text="<")
+        self.subscribed_label = tk.Label(self.frame_subscribed, text="Subscribed")
+        self.unsubscribed_label = tk.Label(self.frame_unsubscribed, text="Unsubscribed")
+        self.listbox_subscribed_entities = tk.Listbox(self.frame_subscribed, width=50)
+        self.listbox_unsubscribed_entities = tk.Listbox(self.frame_unsubscribed, width=50, height=50)
+        self.scrollbar = tk.Scrollbar(self.frame_unsubscribed)
 
-    if entity_id:
-        entity = db.fetch_entity_by_name(entity_id)
-        print("HERE", entity)
-        db.update_entity(entity_id, 1)
-        listbox_unsubscribed_entities.delete(tk.ANCHOR)
-        listbox_subscribed_entities.insert(entity.id - 1, entity_id)
-        print("Subscribed", entity_id)
+    def setup_layout(self):
+        self.frame_entities_container.columnconfigure([0, 1, 2], minsize=100, weight=1)
+        self.frame_entities_container.rowconfigure(0, minsize=100, weight=1)
+        self.frame_entities_container.pack(fill=tk.BOTH, side=tk.TOP)
+        self.frame_unsubscribed.grid(row=0, column=0, sticky="nsew")
+        self.unsubscribed_label.pack()
+        self.listbox_unsubscribed_entities.pack(side=tk.LEFT, fill=tk.BOTH)
 
+        # Subscribe/Unsubscribe buttons
+        self.frame_btn_group.grid(row=0, column=1, sticky="ew")
 
-def unsubscribe(event):
-    entity_id = listbox_subscribed_entities.get(tk.ANCHOR)
+        self.btn_subscribe.pack(pady=10)
+        self.btn_subscribe.bind("<Button-1>", self.subscribe)
 
-    if entity_id:
-        db.update_entity(entity_id, 0)
-        entity = db.fetch_entity_by_name(entity_id)
-        listbox_subscribed_entities.delete(tk.ANCHOR)
-        listbox_unsubscribed_entities.insert(entity.id - 1, entity_id)
-        print("Unsubscribed", entity_id)
+        self.btn_unsubscribe.pack()
+        self.btn_unsubscribe.bind("<Button-1>", self.unsubscribe)
 
+        self.frame_subscribed.grid(row=0, column=2, sticky="nsew")
 
-def add_entities(home_entities):
-    for entity in home_entities:
-        if entity.is_subscribed:
-            listbox_subscribed_entities.insert(tk.END, entity.name)
-        else:
-            listbox_unsubscribed_entities.insert(tk.END, entity.name)
+        self.subscribed_label.pack()
 
+        self.listbox_subscribed_entities.pack(side=tk.RIGHT, fill=tk.BOTH)
 
-window = tk.Tk()
+        self.scrollbar.pack(side=tk.RIGHT, fill=tk.BOTH)
 
-frame_entities_container = tk.Frame(window)
-frame_entities_container.columnconfigure([0, 1, 2], minsize=100, weight=1)
-frame_entities_container.rowconfigure(0, minsize=100, weight=1)
-frame_entities_container.pack(fill=tk.BOTH, side=tk.TOP)
+        self.listbox_unsubscribed_entities.config(yscrollcommand=self.scrollbar.set)
+        self.scrollbar.config(command=self.listbox_unsubscribed_entities.yview)
 
-frame_unsubscribed = tk.Frame(frame_entities_container)
-frame_unsubscribed.grid(row=0, column=0, sticky="nsew")
-unsubscribed_label = tk.Label(frame_unsubscribed, text="Unsubscribed")
-unsubscribed_label.pack()
-listbox_unsubscribed_entities = tk.Listbox(frame_unsubscribed, width=50, height=50)
-listbox_unsubscribed_entities.pack(side=tk.LEFT, fill=tk.BOTH)
+    def subscribe(self, event):
+        entity_id = self.listbox_unsubscribed_entities.get(tk.ANCHOR)
 
-# Subscribe/Unsubscribe buttons
-frame_btn_group = tk.Frame(frame_entities_container)
-frame_btn_group.grid(row=0, column=1, sticky="ew")
+        if entity_id:
+            entity = self.db.fetch_entity_by_name(entity_id)
+            print("HERE", entity)
+            self.db.update_entity(entity_id, 1)
+            self.listbox_unsubscribed_entities.delete(tk.ANCHOR)
+            self.listbox_subscribed_entities.insert(entity.id - 1, entity_id)
+            print("Subscribed", entity_id)
 
-btn_subscribe = tk.Button(frame_btn_group, text=">")
-btn_subscribe.pack(pady=10)
-btn_subscribe.bind("<Button-1>", subscribe)
+    def unsubscribe(self, event):
+        entity_id = self.listbox_subscribed_entities.get(tk.ANCHOR)
 
-btn_unsubscribe = tk.Button(frame_btn_group, text="<")
-btn_unsubscribe.pack()
-btn_unsubscribe.bind("<Button-1>", unsubscribe)
+        if entity_id:
+            self.db.update_entity(entity_id, 0)
+            entity = self.db.fetch_entity_by_name(entity_id)
+            self.listbox_subscribed_entities.delete(tk.ANCHOR)
+            self.listbox_unsubscribed_entities.insert(entity.id - 1, entity_id)
+            print("Unsubscribed", entity_id)
 
-frame_subscribed = tk.Frame(frame_entities_container)
-frame_subscribed.grid(row=0, column=2, sticky="nsew")
-subscribed_label = tk.Label(frame_subscribed, text="Subscribed")
-subscribed_label.pack()
-listbox_subscribed_entities = tk.Listbox(frame_subscribed, width=50)
-listbox_subscribed_entities.pack(side=tk.RIGHT, fill=tk.BOTH)
+    def add_entities(self, home_entities):
+        for entity in home_entities:
+            if entity.is_subscribed:
+                self.listbox_subscribed_entities.insert(tk.END, entity.name)
+            else:
+                self.listbox_unsubscribed_entities.insert(tk.END, entity.name)
 
-scrollbar = tk.Scrollbar(frame_unsubscribed)
-scrollbar.pack(side=tk.RIGHT, fill=tk.BOTH)
+    def init(self):
+        print("GUI Init")
 
-listbox_unsubscribed_entities.config(yscrollcommand=scrollbar.set)
-scrollbar.config(command=listbox_unsubscribed_entities.yview)
+        self.setup_layout()
 
+        home_entities = self.db.fetch_entities()
 
-def init():
-    print("GUI Init")
-    home_entities = db.fetch_entities()
+        for entity in home_entities:
+            if entity.is_subscribed:
+                self.listbox_subscribed_entities.insert(tk.END, entity.name)
+            else:
+                self.listbox_unsubscribed_entities.insert(tk.END, entity.name)
 
-    for entity in home_entities:
-        if entity.is_subscribed:
-            listbox_subscribed_entities.insert(tk.END, entity.name)
-        else:
-            listbox_unsubscribed_entities.insert(tk.END, entity.name)
-
-    window.mainloop()
+        self.window.mainloop()
