@@ -17,15 +17,6 @@ class HomeEventNotifier:
         self.access_token = os.environ["ACCESS_TOKEN"]
         self.rest_url = os.environ["REST_URL"]
 
-    def start_processes(self):
-        ui = self.gui.init()
-        gui_process = Process(target=ui, daemon=True)
-        subscriber_process = Process(target=subscriber.init, daemon=True)
-        subscriber_process.start()
-        gui_process.start()
-        subscriber_process.join()
-        gui_process.join()
-
     def fetch_entities(self):
         return self.db.fetch_entities()
 
@@ -37,9 +28,10 @@ class HomeEventNotifier:
             print(ha_entities)
             self.db.setup(ha_entities)
 
-        self.start_processes()
-
 
 if __name__ == '__main__':
     home_notification = HomeEventNotifier()
+    subscriber_process = Process(target=subscriber.init, daemon=True)
+    subscriber_process.start()
+    home_notification.gui.init()
     home_notification.run()
