@@ -2,6 +2,25 @@ import tkinter as tk
 from tkinter import ttk
 
 
+class SettingsTab(tk.Frame):
+    def __init__(self, parent, *args, **kwargs):
+        tk.Frame.__init__(self, parent, *args, **kwargs)
+        self.access_token_label = tk.Label(self, text="Access Token:")
+        self.access_token_input = tk.Entry(self)
+        self.save_btn = tk.Button(self, text="Save")
+
+        self.access_token_label.pack()
+        self.access_token_input.pack()
+        self.save_btn.pack()
+
+        self.save_btn.bind("<Button-1>", self.save_settings)
+
+    def save_settings(self, event):
+        access_token = self.access_token_input.get()
+        print(event)
+        print(access_token)
+
+
 class GUI:
     def __init__(self, db):
         self.db = db
@@ -10,6 +29,10 @@ class GUI:
         self.entities_tab = tk.Frame(self.tabControl)
         self.settings_tab = tk.Frame(self.tabControl)
         self.frame_entities_container = tk.Frame(self.entities_tab)
+
+        self.frame_settings_container = tk.Frame(self.settings_tab)
+        self.settings_frame = SettingsTab(self.frame_settings_container)
+
         self.frame_subscribed = tk.Frame(self.frame_entities_container)
         self.frame_unsubscribed = tk.Frame(self.frame_entities_container)
         self.frame_btn_group = tk.Frame(self.frame_entities_container)
@@ -31,6 +54,10 @@ class GUI:
         self.frame_entities_container.columnconfigure([0, 1, 2], minsize=100, weight=1)
         self.frame_entities_container.rowconfigure(0, minsize=100, weight=1)
         self.frame_entities_container.pack(fill=tk.BOTH, side=tk.TOP)
+
+        # Settings container
+        self.frame_settings_container.pack(fill=tk.BOTH, side=tk.TOP)
+        self.settings_frame.pack()
 
         self.frame_subscribed.grid(row=0, column=2, sticky="nsew")
         self.frame_unsubscribed.grid(row=0, column=0, sticky="nsew")
