@@ -5,19 +5,29 @@ from tkinter import ttk
 class SettingsTab(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         tk.Frame.__init__(self, parent, *args, **kwargs)
+
+        self.hostname_label = tk.Label(self, text="Hostname:")
+        self.hostname_input = tk.Entry(self)
+
         self.access_token_label = tk.Label(self, text="Access Token:")
         self.access_token_input = tk.Entry(self)
         self.save_btn = tk.Button(self, text="Save")
 
+        self.hostname_label.pack()
+        self.hostname_input.pack()
         self.access_token_label.pack()
         self.access_token_input.pack()
         self.save_btn.pack()
 
+        self.save_btn = tk.Button(self, text="Save")
+        self.save_btn.pack(pady=10)
         self.save_btn.bind("<Button-1>", self.save_settings)
 
     def save_settings(self, event):
+        hostname = self.hostname_input.get()
         access_token = self.access_token_input.get()
         print(event)
+        print(hostname)
         print(access_token)
 
 
